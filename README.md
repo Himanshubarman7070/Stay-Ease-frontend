@@ -9,47 +9,18 @@ React + Vite frontend for the StayEase Smart Tiffin & Grocery Management System.
 - Axios
 - Vite
 
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) v18 or higher
-- The [StayEase Backend](https://github.com/Himanshubarman7070/Stay-Ease-backend) running locally
-
-## Local Setup
-
-### 1. Clone the repository
+## Quick Start (Local)
 
 ```bash
 git clone https://github.com/Himanshubarman7070/Stay-Ease-frontend.git
 cd Stay-Ease-frontend
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
-```
-
-### 3. Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and set the backend URL:
-
-```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-> If your backend runs on a different port, update this value accordingly.
-
-### 4. Start the dev server
-
-```bash
 npm run dev
 ```
 
-The app will open at `http://localhost:5173`.
+The app will open at `http://localhost:5173` and connects to the local backend at `http://localhost:5000/api`.
+
+> Make sure the [backend](https://github.com/Himanshubarman7070/Stay-Ease-backend) is also running locally.
 
 ## Build for Production
 
