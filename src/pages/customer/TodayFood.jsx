@@ -5,6 +5,14 @@ import { Link } from "react-router-dom";
 import { foodAPI, mealAPI } from "../../services/api";
 import { mealStatusClass } from "../../utils/statusBadge";
 
+const toAmPm = (time) => {
+  if (!time) return time;
+  const [h, m] = time.split(":").map(Number);
+  const period = h < 12 ? "AM" : "PM";
+  const hour = h % 12 || 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+};
+
 export default function TodayFood() {
   const [foods, setFoods] = useState([]);
   const [schedule, setSchedule] = useState(null);
@@ -61,13 +69,13 @@ export default function TodayFood() {
           <h3 style={{ marginBottom: "0.75rem" }}>Delivery Times</h3>
           <div className="delivery-times">
             <span>
-              🌅 Breakfast: <strong>{schedule.breakfast}</strong>
+              🌅 Breakfast: <strong>{toAmPm(schedule.breakfast)}</strong>
             </span>
             <span>
-              ☀️ Lunch: <strong>{schedule.lunch}</strong>
+              ☀️ Lunch: <strong>{toAmPm(schedule.lunch)}</strong>
             </span>
             <span>
-              🌙 Dinner: <strong>{schedule.dinner}</strong>
+              🌙 Dinner: <strong>{toAmPm(schedule.dinner)}</strong>
             </span>
           </div>
           {hasPlan && (
@@ -159,7 +167,7 @@ export default function TodayFood() {
                         marginTop: "0.5rem",
                       }}
                     >
-                      Delivery: {schedule?.[cat] || "—"}
+                      Delivery: {toAmPm(schedule?.[cat]) || "—"}
                     </p>
                   )}
                 </div>

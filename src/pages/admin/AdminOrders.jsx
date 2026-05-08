@@ -125,11 +125,15 @@ export default function AdminOrders() {
                       ) : o.deliveryStatus === "Delivered" ? (
                         <button
                           type="button"
-                          className="btn btn-primary btn-sm"
+                          className={`btn btn-sm ${o.paymentPending ? "btn-primary" : "btn-outline"}`}
                           onClick={() => handleMarkPaid(o._id)}
                           disabled={markingPaid === o._id}
                         >
-                          {markingPaid === o._id ? "..." : "Mark Paid"}
+                          {markingPaid === o._id
+                            ? "..."
+                            : o.paymentPending
+                            ? "✅ Confirm Payment"
+                            : "Mark Paid"}
                         </button>
                       ) : (
                         <span className="badge badge-pending">Due</span>
@@ -216,12 +220,14 @@ export default function AdminOrders() {
                   <div className="card-actions">
                     <button
                       type="button"
-                      className="btn btn-primary btn-sm btn-block"
+                      className={`btn btn-sm btn-block ${o.paymentPending ? "btn-primary" : "btn-outline"}`}
                       onClick={() => handleMarkPaid(o._id)}
                       disabled={markingPaid === o._id}
                     >
                       {markingPaid === o._id
                         ? "Processing..."
+                        : o.paymentPending
+                        ? "✅ Confirm Payment"
                         : "💳 Mark as Paid"}
                     </button>
                   </div>

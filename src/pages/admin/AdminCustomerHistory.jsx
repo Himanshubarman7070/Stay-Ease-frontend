@@ -185,53 +185,48 @@ export default function AdminCustomerHistory() {
             className="glass-card"
             style={{
               padding: "0.75rem 1rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              flexWrap: "wrap",
             }}
           >
-            <div>
-              <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                Tiffin Plan
+            <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+              Tiffin Plan
+            </span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginTop: "0.2rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <strong>
+                {plan.planType} · {plan.duration}
+              </strong>
+              <span
+                className={`badge ${plan.isActive ? "badge-accepted" : "badge-pending"}`}
+              >
+                {plan.isActive ? "Active" : "Inactive"}
               </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  marginTop: "0.2rem",
-                }}
-              >
-                <strong>
-                  {plan.planType} · {plan.duration}
-                </strong>
-                <span
-                  className={`badge ${plan.isActive ? "badge-accepted" : "badge-pending"}`}
+              {plan.isActive ? (
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={handleDeactivate}
+                  disabled={planLoading}
                 >
-                  {plan.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
+                  {planLoading ? "..." : "Deactivate Plan"}
+                </button>
+              ) : plan.status === "Accepted" ? (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={handleActivate}
+                  disabled={planLoading}
+                >
+                  {planLoading ? "..." : "Activate Plan"}
+                </button>
+              ) : null}
             </div>
-            {plan.isActive ? (
-              <button
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={handleDeactivate}
-                disabled={planLoading}
-              >
-                {planLoading ? "..." : "Deactivate Plan"}
-              </button>
-            ) : plan.status === "Accepted" ? (
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={handleActivate}
-                disabled={planLoading}
-              >
-                {planLoading ? "..." : "Activate Plan"}
-              </button>
-            ) : null}
           </div>
         )}
       </div>

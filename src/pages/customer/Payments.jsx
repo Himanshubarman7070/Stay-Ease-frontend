@@ -43,7 +43,8 @@ export default function Payments() {
     }
     setLoading(true);
     try {
-      await paymentAPI.submit({ paymentDate, notes });
+      const groceryOrderIds = dueGroceryOrders.map((o) => o._id);
+      await paymentAPI.submit({ paymentDate, notes, groceryOrderIds });
       showToast("Payment submitted — admin will confirm");
       setNotes("");
       load();
@@ -62,6 +63,14 @@ export default function Payments() {
 
   const dueGroceryOrders = groceryOrders.filter(
     (o) => o.deliveryStatus === "Delivered" && !o.isPaid,
+  );
+  // Orders where customer submitted payment but admin hasn't confirmed yet
+  const pendingGroceryOrders = groceryOrders.filter(
+    (o) => o.deliveryStatus === "Delivered" && !o.isPaid && o.paymentPending,
+  );
+  // Only unpaid + not yet submitted
+  const unpaidGroceryOrders = groceryOrders.filter(
+    (o) => o.deliveryStatus === "Delivered" && !o.isPaid && !o.paymentPending,
   );
 
   return (
@@ -243,10 +252,14 @@ export default function Payments() {
               marginBottom: "1rem",
             }}
           >
-            These orders have been delivered. Please pay the admin:{" "}
-            <strong style={{ color: "var(--accent-cyan)" }}>
-              ₹{groceryDue}
-            </strong>
+            {pendingGroceryOrders.length > 0
+              ? `Payment submitted for ${pendingGroceryOrders.length} order(s) — awaiting admin confirmation`
+              : "These orders have been delivered. Please pay the admin:"}
+            {unpaidGroceryOrders.length > 0 && (
+              <strong style={{ color: "var(--accent-cyan)" }}>
+                {" "}₹{unpaidGroceryOrders.reduce((s, o) => s + o.totalAmount, 0)}
+              </strong>
+            )}
           </p>
           <div className="desktop-table table-wrap">
             <table className="data-table">
@@ -255,7 +268,7 @@ export default function Payments() {
                   <th>Order Date</th>
                   <th>Items</th>
                   <th>Amount</th>
-                  <th>Status</th>
+                  <th>Payment</th>
                 </tr>
               </thead>
               <tbody>
@@ -277,9 +290,9 @@ export default function Payments() {
                     <td>₹{o.totalAmount}</td>
                     <td>
                       <span
-                        className={`badge badge-${groceryStatusClass(o.deliveryStatus)}`}
+                        className={`badge ${o.paymentPending ? "badge-pending" : "badge-rejected"}`}
                       >
-                        {o.deliveryStatus}
+                        {o.paymentPending ? "Payment Submitted" : "Unpaid"}
                       </span>
                     </td>
                   </tr>
@@ -306,11 +319,11 @@ export default function Payments() {
                   </span>
                 </div>
                 <div className="card-row">
-                  <span className="card-label">Status</span>
+                  <span className="card-label">Payment</span>
                   <span
-                    className={`badge badge-${groceryStatusClass(o.deliveryStatus)}`}
+                    className={`badge ${o.paymentPending ? "badge-pending" : "badge-rejected"}`}
                   >
-                    {o.deliveryStatus}
+                    {o.paymentPending ? "Payment Submitted" : "Unpaid"}
                   </span>
                 </div>
               </article>
