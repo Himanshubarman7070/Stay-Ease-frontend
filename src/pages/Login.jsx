@@ -1,16 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+
+const RETRY_SECONDS = 50; // Render cold start can take up to ~60s
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loadingMsg, setLoadingMsg] = useState('Signing in...');
+  const [countdown, setCountdown] = useState(0);
+  const countdownRef = useRef(null);
   const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    return () => clearInterval(countdownRef.current);
+  }, []);
+
+  const startCountdown = () => {
+    setCountdown(RETRY_SECONDS);
+    countdownRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) { clearInterval(countdownRef.current); return 0; }
+        return c - 1;
+      });
+    }, 1000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,10 +38,9 @@ export default function Login() {
       navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
     } catch (err) {
       if (!err.response) {
-        // Network error — Render server is likely waking up; retry once after delay
-        showToast('Server is starting up, retrying…', 'error');
-        setLoadingMsg('Server waking up…');
-        await new Promise((res) => setTimeout(res, 8000));
+        // Network error — Render free tier is cold-starting; wait and retry
+        startCountdown();
+        await new Promise((res) => setTimeout(res, RETRY_SECONDS * 1000));
         try {
           const user = await login(email, password);
           showToast('Welcome back!');
@@ -32,8 +48,7 @@ export default function Login() {
           return;
         } catch (retryErr) {
           showToast(
-            retryErr.response?.data?.message ||
-              'Server is still starting. Please wait 30 seconds and try again.',
+            retryErr.response?.data?.message || 'Login failed. Please try again.',
             'error'
           );
         }
@@ -42,7 +57,8 @@ export default function Login() {
       }
     } finally {
       setLoading(false);
-      setLoadingMsg('Signing in...');
+      setCountdown(0);
+      clearInterval(countdownRef.current);
     }
   };
 
@@ -61,7 +77,11 @@ export default function Login() {
             <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-            {loading ? loadingMsg : 'Login'}
+            {countdown > 0
+              ? `Server waking up… retrying in ${countdown}s`
+              : loading
+              ? 'Signing in...'
+              : 'Login'}
           </button>
         </form>
         <p className="auth-footer">

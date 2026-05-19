@@ -10,8 +10,11 @@ const api = axios.create({
 });
 
 // Wake up the Render free-tier server so it's ready before the user logs in
+// Render cold start can take 30-90s, so set a generous timeout
 export const pingServer = () =>
-  axios.get(API_URL.replace(/\/api$/, "/api/health")).catch(() => {});
+  axios
+    .get(API_URL.replace(/\/api$/, "/api/health"), { timeout: 90000 })
+    .catch(() => {});
 
 api.interceptors.request.use((config) => {
   const stored = localStorage.getItem("stayease_user");
