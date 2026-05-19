@@ -9,6 +9,10 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Wake up the Render free-tier server so it's ready before the user logs in
+export const pingServer = () =>
+  axios.get(API_URL.replace(/\/api$/, "/api/health")).catch(() => {});
+
 api.interceptors.request.use((config) => {
   const stored = localStorage.getItem("stayease_user");
   if (stored) {

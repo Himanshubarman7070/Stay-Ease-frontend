@@ -7,6 +7,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('Signing in...');
   const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -19,9 +20,29 @@ export default function Login() {
       showToast('Welcome back!');
       navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Login failed', 'error');
+      if (!err.response) {
+        // Network error — Render server is likely waking up; retry once after delay
+        showToast('Server is starting up, retrying…', 'error');
+        setLoadingMsg('Server waking up…');
+        await new Promise((res) => setTimeout(res, 8000));
+        try {
+          const user = await login(email, password);
+          showToast('Welcome back!');
+          navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+          return;
+        } catch (retryErr) {
+          showToast(
+            retryErr.response?.data?.message ||
+              'Server is still starting. Please wait 30 seconds and try again.',
+            'error'
+          );
+        }
+      } else {
+        showToast(err.response?.data?.message || 'Login failed', 'error');
+      }
     } finally {
       setLoading(false);
+      setLoadingMsg('Signing in...');
     }
   };
 
@@ -40,7 +61,7 @@ export default function Login() {
             <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-            {loading ? 'Signing in...' : 'Login'}
+            {loading ? loadingMsg : 'Login'}
           </button>
         </form>
         <p className="auth-footer">
